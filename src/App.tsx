@@ -1,16 +1,29 @@
 import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
+import service from "./services"
+
+interface ResearchRecommendation {
+  url: string;
+  title: string;
+  summary: string;
+}
 
 function App() {
   const [query, setQuery] = useState("");
-  const cards = [
-    { title: "Card 1", summary: "This is a summary of card 1." },
-    { title: "Card 2", summary: "This is a summary of card 2." },
-    { title: "Card 3", summary: "This is a summary of card 3." },
-    { title: "Card 4", summary: "This is a summary of card 4." },
-    { title: "Card 5", summary: "This is a summary of card 5." },
-  ];
+  const [cards, setCards] = useState<ResearchRecommendation[]>([]);
+  const [keyword, setKeyword] = useState("");
+
+  // Fetch recommendations when the component mounts
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      const recommendations = await service.homeRecommendations();
+      setCards(recommendations.data);
+      setKeyword(recommendations.keyword);
+    };
+
+    fetchRecommendations();
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-100">
@@ -21,7 +34,7 @@ function App() {
 
         <p className="mt-2 text-lg text-gray-600">
           Today's keyword is{" "}
-          <span className="text-blue-500">Customization</span>
+          <span className="text-blue-500">{keyword}</span>
         </p>
 
         <div className="mt-4 flex items-center border border-gray-300 rounded-lg shadow-sm">
@@ -45,7 +58,7 @@ function App() {
         {cards.map((card, index) => (
           <a
             key={index}
-            href={card.link}
+            href={card.url}
             className="p-4 bg-white shadow-lg rounded-2xl border border-gray-200 cursor-pointer hover:shadow-xl transition block"
           >
             <h3 className="text-xl font-semibold text-gray-800">
